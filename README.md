@@ -1,4 +1,4 @@
-# Affectli platform
+# Game Points
 
 ## Requirements
 
