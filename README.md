@@ -1,68 +1,130 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Affectli platform
 
-## Available Scripts
+## Requirements
 
-In the project directory, you can run:
+* [node](https://nodejs.org/en/) v8.11.3 (npm v5.6.0)
+* [yarn](https://yarnpkg.com/en/) 1.7.0
 
-### `npm start`
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Getting started
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+Compile and run (development mode):
 
-### `npm test`
+```
+yarn
+yarn start
+```
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Production Build
 
-### `npm run build`
+```
+yarn
+yarn build
+```
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Project structure
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+### Folders
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+* public - contains the public resources to expose.
+* scripts - contains the npm scripts to start (development), to build (production)
+  or to test the project.
+* src - contains all the source code and resources related to this application
+  (this is the project root).
+  * app - main application source folder.
+    * actions - Redux Actions.
+    * components - React Components.
+    * containers - React containers.
+    * reducers - Redux reducers.
+    * store - Redux store configuration.
+  * App.jsx - App main object.
+  * index.js - App startup script.
+  * registerServiceWorker.js - service worker used to improve the App performance.
+* .eslintrc - [eslint](http://eslint.org/docs/user-guide/configuring) configuration.
+* .flowconfig - [Flow](https://flow.org/) configuration.
+* .gitignore - git ignore configuration.
+* .gitlab-ci.yml - GitLab CI configuration to deploy the app in the CI environments.
+* yarn.lock - created and used by yarn to lock the modules versions
+  in order to get consistent installs across machines.
 
-### `npm run eject`
+### Conventions
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+#### React Containers and Components
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The _/src/app/containers_ folder contains all the React Containers,
+while the _/src/app/components_ folder contains all the React Components.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+A React Container:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+* it concerns with _how things works_.
+* it should extends the
+  [React.PureComponent](https://facebook.github.io/react/docs/react-api.html#react.purecomponent).
+* it can contains Components and/or Containers.
+* it uses the Redux connect function to read from the Redux state and to connect Redux Actions.
+  The connected Actions can be used directly in the Container
+  or can be passed as parameter to the Components.
+* it provides the data and behavior to presentational Components or other Containers.
+* it can be generated using
+  [Higher-Order Components](https://facebook.github.io/react/docs/higher-order-components.html).
 
-## Learn More
+A React Component (presentational):
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+* it concerns with _how things looks_.
+* it should extends the
+  [React.PureComponent](https://facebook.github.io/react/docs/react-api.html#react.purecomponent).
+* it can contains other Components but it must not contains any Containers.
+* it must not use the Redux connect function.
+* rarely have its own state and it should be written as a
+  [functional component](https://facebook.github.io/react/blog/2015/10/07/react-v0.14.html#stateless-functional-components).
+* it must not be generated using
+  [Higher-Order Components](https://facebook.github.io/react/docs/higher-order-components.html)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Redux Actions
 
-### Code Splitting
+The _/src/actions_ folder contains all the Redux Actions.
+All the generated Redux Actions MUST NOT include properties other than:
+* type
+* payload
+* error
+* meta
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+##### Action Type
 
-### Analyzing the Bundle Size
+The _type_ property is a string that identify the Action,
+it is a required field and its value must be unique.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+##### Action Payload
 
-### Making a Progressive Web App
+The optional _payload_ property MAY be any type of value.
+It represents the payload of the action.
+Any information about the action that is not the type or status of the action
+should be part of the payload field.
+By convention, if _error_ property is true, the payload SHOULD be an error object.
+The _payload_ must be immutable.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+##### Action Error
 
-### Advanced Configuration
+The optional _error_ property is a boolean and if true indicates that action represents an error.
+In case the Action is not an error this property must be omitted rather that setting it to false.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
 
-### Deployment
+#### Redux Reducers
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+The _/src/reducers_ folder contains all the Redux reducers.
+The relative path of the reducers (starting from the _reducers_ folder)
+must reflects the path where we are storing the information in the Redux store.
+For example, the eventsListReducer is located in the _src/reducers/stream/events/list_ folder
+and it will write in the  _state.stream.events.list_ property of the Redux store.
+The reduces is a **pure function**.
+A pure function is a function where the return value is only determined by its input values.
+A pure function must not mutate the value of any input parameter.
+When the reducer has to mutate the state, it has to create and return a new immutable object.
+It's good practice define the default values in the reducer to safely access to the value from
+the actions and in the components.
 
-### `npm run build` fails to minify
+#### Style
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+For style 
+
+* Material ui
+* style-components
